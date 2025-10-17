@@ -1,0 +1,6 @@
+size: { width: 1080, height: 1920 }
+layout: { safe_padding_px: 72, max_chars_per_line: 22, line_spacing: 1.15, slide_sec: 7 }
+fonts: { title: assets/fonts/NotoSansJP-Bold.otf, body: assets/fonts/NotoSansJP-Regular.otf }
+colors: { fg_title: "#111111", fg_body: "#111111", badge_bg: "#EDEDED", cta_fg: "#333333", cta_bg: "#FFFFFFAA" }
+background: { image: assets/bg/default.jpg }
+cta: { text: "役立ったら保存", position: "bottom_right" }
