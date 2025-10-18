@@ -5,62 +5,18 @@ from __future__ import annotations
 import sys
 import textwrap
 from pathlib import Path
-from typing import NoReturn
-
-
-def _missing_dependency(module: str, details: str | None = None) -> NoReturn:
-    """Print Japanese guidance when a dependency is missing."""
-    base_message = (
-        f"依存ライブラリ '{module}' が見つかりません。\n"
-        "以下のコマンドを実行してから、再度このスクリプトを実行してください:\n"
-        "  python -m pip install --upgrade pip\n"
-        "  python -m pip install moviepy pillow numpy pyyaml\n"
-    )
-    if details:
-        base_message += f"詳細: {details}\n"
-    print(base_message, file=sys.stderr)
-    sys.exit(2)
-
-
-try:
-    import numpy as np  # type: ignore
-except ModuleNotFoundError as exc:
-    _missing_dependency("numpy", str(exc))
-
-try:
-    from yaml import safe_load
-except ModuleNotFoundError as exc:
-    _missing_dependency("pyyaml", str(exc))
-
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ModuleNotFoundError as exc:
-    _missing_dependency("pillow", str(exc))
-
-try:
-    from moviepy.editor import (
-        AudioFileClip,
-        CompositeAudioClip,
-        ImageClip,
-        concatenate_videoclips,
-    )
-except ModuleNotFoundError as exc:
-    _missing_dependency("moviepy", str(exc))
-
 
 def load_config(config_path: Path) -> dict:
     if not config_path.exists():
         raise FileNotFoundError(f"Config not found: {config_path}")
     with config_path.open("r", encoding="utf-8") as fh:
-        return safe_load(fh)
-
 
 def parse_markdown(md_path: Path) -> tuple[dict, str, list[str]]:
     content = md_path.read_text(encoding="utf-8")
     parts = content.split("---")
     if len(parts) < 3:
         raise ValueError("Markdown missing frontmatter")
-    frontmatter = safe_load(parts[1]) or {}
+        
     body = "---".join(parts[2:]).strip()
 
     title = ""
