@@ -5,80 +5,12 @@ from __future__ import annotations
 import sys
 import textwrap
 from pathlib import Path
-from typing import NoReturn
-
-
-def _missing_dependency(module: str, details: str | None = None) -> NoReturn:
-    """Print Japanese guidance when a dependency is missing."""
-    base_message = (
-        f"依存ライブラリ '{module}' が見つかりません。\n"
-        "以下のコマンドを実行してから、再度このスクリプトを実行してください:\n"
-        "  python -m pip install --upgrade pip\n"
-        "  python -m pip install moviepy pillow numpy pyyaml\n"
-    )
-    if details:
-        base_message += f"詳細: {details}\n"
-    print(base_message, file=sys.stderr)
-    sys.exit(2)
-
-
-try:
-    import numpy as np  # type: ignore
-except ModuleNotFoundError as exc:
-    _missing_dependency("numpy", str(exc))
-
-try:
-    from yaml import safe_load
-except ModuleNotFoundError as exc:
-    _missing_dependency("pyyaml", str(exc))
-
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ModuleNotFoundError as exc:
-    _missing_dependency("pillow", str(exc))
-
-try:
-    from moviepy.editor import (
-        AudioFileClip,
-        CompositeAudioClip,
-        ImageClip,
-        concatenate_videoclips,
-    )
-except ModuleNotFoundError as exc:
-    _missing_dependency("moviepy", str(exc))
-
-
-def load_config(config_path: Path) -> dict:
-    if not config_path.exists():
-        raise FileNotFoundError(
-            f"設定ファイルが見つかりません: {config_path}"
-        )
-    with config_path.open("r", encoding="utf-8") as fh:
-        return safe_load(fh) or {}
-
 
 def parse_markdown(md_path: Path) -> tuple[dict, str, list[str]]:
     content = md_path.read_text(encoding="utf-8")
     parts = content.split("---")
     if len(parts) < 3:
-        raise ValueError("frontmatter ブロック (---) が見つかりません")
-    frontmatter = safe_load(parts[1]) or {}
-    body = "---".join(parts[2:]).strip()
 
-    title = ""
-    bullets: list[str] = []
-    for line in body.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line.startswith("# ") and not title:
-            title = line[2:].strip()
-        elif line.startswith("- "):
-            bullets.append(line[2:].strip())
-    if not title:
-        raise ValueError("本文に H1 見出し (# ) がありません")
-    if not bullets:
-        raise ValueError("箇条書き (- ) が 1 行も見つかりません")
     return frontmatter, title, bullets
 
 
@@ -144,8 +76,6 @@ def create_slide(title: str, bullet: str, cfg: dict) -> Image.Image:
 
     return background
 
-
-def build_video(md_path: Path) -> tuple[Path, dict]:
     cfg = load_config(Path("config/style.yaml"))
     frontmatter, title, bullets = parse_markdown(md_path)
     duration = float(cfg.get("layout", {}).get("slide_sec", 7))
@@ -177,58 +107,9 @@ def build_video(md_path: Path) -> tuple[Path, dict]:
         verbose=False,
         logger=None,
     )
-    return output_path, {
-        "title": title,
-        "bullet_count": len(bullets),
-        "slide_sec": duration,
-        "total_duration": duration * len(bullets),
-        "frontmatter": frontmatter,
-    }
-
-
-def print_summary(md_path: Path, info: dict, output: Path) -> None:
-    title = info.get("title", "")
-    bullet_count = info.get("bullet_count", 0)
-    total_duration = info.get("total_duration", 0.0)
-    frontmatter = info.get("frontmatter", {})
-    hashtags = frontmatter.get("hashtags") or []
-    hashtags_text = ", ".join(hashtags) if isinstance(hashtags, list) else str(hashtags)
-
-    summary_lines = [
-        "✅ レンダリングが完了しました。",
-        f"  - 入力: {md_path}",
-        f"  - 出力: {output}",
-        f"  - タイトル: {title}",
-        f"  - スライド数: {bullet_count}枚",
-        f"  - 合計尺: {total_duration:.1f}秒",
-    ]
-    if hashtags_text:
-        summary_lines.append(f"  - ハッシュタグ: {hashtags_text}")
-
-    print("\n".join(summary_lines))
-
 
 def main() -> None:
     if len(sys.argv) != 2:
-        print("使い方: python scripts/render.py <マークダウンファイル>", file=sys.stderr)
-        sys.exit(1)
-    md_path = Path(sys.argv[1])
-    if not md_path.exists():
-        print(f"入力ファイルが見つかりません: {md_path}", file=sys.stderr)
-        sys.exit(2)
-    try:
-        output, info = build_video(md_path)
-    except FileNotFoundError as exc:
-        print(str(exc), file=sys.stderr)
-        sys.exit(3)
-    except ValueError as exc:
-        print(f"マークダウンの形式に問題があります: {exc}", file=sys.stderr)
-        sys.exit(4)
-    except Exception as exc:
-        print(f"予期しないエラーが発生しました: {exc}", file=sys.stderr)
-        sys.exit(5)
-    print_summary(md_path, info, output)
-
 
 if __name__ == "__main__":
     main()
