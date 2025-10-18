@@ -6,33 +6,11 @@ import sys
 import textwrap
 from pathlib import Path
 
-def load_config(config_path: Path) -> dict:
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config not found: {config_path}")
-    with config_path.open("r", encoding="utf-8") as fh:
-
 def parse_markdown(md_path: Path) -> tuple[dict, str, list[str]]:
     content = md_path.read_text(encoding="utf-8")
     parts = content.split("---")
     if len(parts) < 3:
-        raise ValueError("Markdown missing frontmatter")
-        
-    body = "---".join(parts[2:]).strip()
 
-    title = ""
-    bullets: list[str] = []
-    for line in body.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line.startswith("# ") and not title:
-            title = line[2:].strip()
-        elif line.startswith("- "):
-            bullets.append(line[2:].strip())
-    if not title:
-        raise ValueError("Title (H1) missing in markdown body")
-    if not bullets:
-        raise ValueError("No bullet points found in markdown body")
     return frontmatter, title, bullets
 
 
@@ -98,8 +76,6 @@ def create_slide(title: str, bullet: str, cfg: dict) -> Image.Image:
 
     return background
 
-
-def build_video(md_path: Path) -> Path:
     cfg = load_config(Path("config/style.yaml"))
     frontmatter, title, bullets = parse_markdown(md_path)
     duration = float(cfg.get("layout", {}).get("slide_sec", 7))
@@ -131,24 +107,9 @@ def build_video(md_path: Path) -> Path:
         verbose=False,
         logger=None,
     )
-    return output_path
-
 
 def main() -> None:
     if len(sys.argv) != 2:
-        print("Usage: render.py <markdown>", file=sys.stderr)
-        sys.exit(1)
-    md_path = Path(sys.argv[1])
-    if not md_path.exists():
-        print(f"File not found: {md_path}", file=sys.stderr)
-        sys.exit(1)
-    try:
-        output = build_video(md_path)
-    except Exception as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        sys.exit(1)
-    print(f"OK: {output}")
-
 
 if __name__ == "__main__":
     main()
