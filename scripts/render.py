@@ -6,17 +6,6 @@ import sys
 import textwrap
 from pathlib import Path
 
-import numpy as np
-import yaml
-from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import (
-    AudioFileClip,
-    CompositeAudioClip,
-    ImageClip,
-    concatenate_videoclips,
-)
-
-
 def load_config(config_path: Path) -> dict:
     if not config_path.exists():
         raise FileNotFoundError(f"Config not found: {config_path}")

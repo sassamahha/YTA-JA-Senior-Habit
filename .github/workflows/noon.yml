@@ -9,7 +9,7 @@ jobs:
         with: { python-version: "3.11" }
       - name: Install deps
         run: |
-          python -m pip install moviepy pillow pyyaml
+
       - name: Pick oldest md
         id: pick
         run: |
