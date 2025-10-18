@@ -10,15 +10,13 @@ def load_config(config_path: Path) -> dict:
     if not config_path.exists():
         raise FileNotFoundError(f"Config not found: {config_path}")
     with config_path.open("r", encoding="utf-8") as fh:
-        return yaml.safe_load(fh)
-
 
 def parse_markdown(md_path: Path) -> tuple[dict, str, list[str]]:
     content = md_path.read_text(encoding="utf-8")
     parts = content.split("---")
     if len(parts) < 3:
         raise ValueError("Markdown missing frontmatter")
-    frontmatter = yaml.safe_load(parts[1]) or {}
+        
     body = "---".join(parts[2:]).strip()
 
     title = ""
