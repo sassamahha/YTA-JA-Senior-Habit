@@ -5,48 +5,6 @@ from __future__ import annotations
 import sys
 import textwrap
 from pathlib import Path
-from typing import NoReturn
-
-
-def _missing_dependency(module: str, details: str | None = None) -> NoReturn:
-    """Print Japanese guidance when a dependency is missing."""
-    base_message = (
-        f"依存ライブラリ '{module}' が見つかりません。\n"
-        "以下のコマンドを実行してから、再度このスクリプトを実行してください:\n"
-        "  python -m pip install --upgrade pip\n"
-        "  python -m pip install moviepy pillow numpy pyyaml\n"
-    )
-    if details:
-        base_message += f"詳細: {details}\n"
-    print(base_message, file=sys.stderr)
-    sys.exit(2)
-
-
-try:
-    import numpy as np  # type: ignore
-except ModuleNotFoundError as exc:
-    _missing_dependency("numpy", str(exc))
-
-try:
-    import yaml
-except ModuleNotFoundError as exc:
-    _missing_dependency("pyyaml", str(exc))
-
-try:
-    from PIL import Image, ImageDraw, ImageFont
-except ModuleNotFoundError as exc:
-    _missing_dependency("pillow", str(exc))
-
-try:
-    from moviepy.editor import (
-        AudioFileClip,
-        CompositeAudioClip,
-        ImageClip,
-        concatenate_videoclips,
-    )
-except ModuleNotFoundError as exc:
-    _missing_dependency("moviepy", str(exc))
-
 
 def load_config(config_path: Path) -> dict:
     if not config_path.exists():
